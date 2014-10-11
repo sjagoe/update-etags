@@ -5,6 +5,7 @@ import os
 import click
 
 from .config import UpdateEtagsConfig
+from .update_etags import UpdateEtags
 
 
 def load_config(config_path):
@@ -19,3 +20,5 @@ def load_config(config_path):
               help='The location of the update_etags config file')
 def update_etags(config):
     config = load_config(config)
+    etags = UpdateEtags(config)
+    etags.update_all_tags()
