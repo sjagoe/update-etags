@@ -11,7 +11,7 @@ from .update_etags import UpdateEtags
 def load_config(config_path):
     if config_path is None:
         config_path = os.path.normpath(
-            os.path.expanduser('~/.update_etags.yaml'))
+            os.path.expanduser('~/.update-etags.yaml'))
     return UpdateEtagsConfig.from_file(config_path)
 
 
