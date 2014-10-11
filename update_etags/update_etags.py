@@ -8,10 +8,17 @@ import subprocess
 from ._compat import replace
 
 
-def _generate_files_to_tag(path, types):
+def _any_match(name, patterns):
+    return any(fnmatch.fnmatch(name, pattern) for pattern in patterns)
+
+
+def _generate_files_to_tag(path, types, skip_dirs):
     for dirpath, dirnames, filenames in os.walk(path):
+        new_dirnames = [name for name in dirnames
+                        if not _any_match(name, skip_dirs)]
+        dirnames[:] = new_dirnames
         for filename in filenames:
-            if any(fnmatch.fnmatch(filename, pattern) for pattern in types):
+            if _any_match(filename, types):
                 yield os.path.join(dirpath, filename)
 
 
@@ -42,9 +49,10 @@ class UpdateEtags(object):
     def _update_tags_for_project(self, project):
         project_path = self._config.project_path(project)
         project_file_types = self._config.project_file_types(project)
+        skip_dirs = self._config.skip_dirs
 
         filename_generator = _generate_files_to_tag(
-            project_path, project_file_types)
+            project_path, project_file_types, skip_dirs)
 
         tags_dst = self._config.project_tags_path(project)
         temp_tags = self._config.temp(tags_dst)

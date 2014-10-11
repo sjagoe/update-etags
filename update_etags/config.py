@@ -15,6 +15,7 @@ class UpdateEtagsConfig(object):
         self._temp_dir = None
         self._etags = None
         self._etags_args = None
+        self._skip_dirs = ()
 
     @classmethod
     def from_file(cls, config_path):
@@ -43,6 +44,8 @@ class UpdateEtagsConfig(object):
         config._etags = data.get('etags-command', cls._default_etags())
         config._etags_args = data.get('etags-args', cls._default_etags_args())
 
+        config._skip_dirs = tuple(data.get('skip-dirs', ()))
+
         return config
 
     @staticmethod
@@ -60,6 +63,10 @@ class UpdateEtagsConfig(object):
     @staticmethod
     def _default_temp_dir(tags_dir):
         return os.path.join(tags_dir, 'temp')
+
+    @property
+    def skip_dirs(self):
+        return self._skip_dirs
 
     @property
     def etags(self):
