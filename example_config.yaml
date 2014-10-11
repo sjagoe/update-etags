@@ -4,4 +4,10 @@
 projects:
   - name: update-etags
     path: C:\\Users\\simon\\workspace\\update-etags
-    file-types: "*.py"
+    file-types:
+      - "*.py"
+  - name: foo
+    path: /home/simon/bar
+    file-types:
+      - "*.c"
+      - "*.py"

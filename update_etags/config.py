@@ -31,7 +31,7 @@ class UpdateEtagsConfig(object):
         config._projects = {
             project['name']: {
                 'path': project['path'],
-                'file-types': project.get('file-types', '*'),
+                'file-types': project.get('file-types', ['*']),
             }
             for project in data.get('projects', [])
         }
