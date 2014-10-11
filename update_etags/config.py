@@ -7,6 +7,10 @@ import yaml
 from .errors import MissingConfiguration, NoSuchProject
 
 
+def normalize_path(path):
+    return os.path.abspath(os.path.normpath(os.path.expanduser(path)))
+
+
 class UpdateEtagsConfig(object):
 
     def __init__(self):
@@ -31,7 +35,7 @@ class UpdateEtagsConfig(object):
 
         config._projects = {
             project['name']: {
-                'path': project['path'],
+                'path': normalize_path(project['path']),
                 'file-types': project.get('file-types', ['*']),
             }
             for project in data.get('projects', [])
@@ -50,7 +54,7 @@ class UpdateEtagsConfig(object):
 
     @staticmethod
     def _default_tags_dir():
-        return os.path.normpath(os.path.expanduser('~/.etags'))
+        return normalize_path('~/.etags')
 
     @staticmethod
     def _default_etags():

@@ -1,9 +1,13 @@
 # tags-dir: ~/.etags
 # temp-dir: ~/.etags/temp
 # etags-command: etags
+skip-dirs:
+  - ".*"
+  - "__pycache__"
+  - "*.egg-info"
 projects:
   - name: update-etags
-    path: C:\\Users\\simon\\workspace\\update-etags
+    path: /home/simon/workspace/update-etags
     file-types:
       - "*.py"
   - name: foo
