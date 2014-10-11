@@ -84,4 +84,9 @@ if __name__ == "__main__":
         version=__version__,
         packages=find_packages(),
         author="Simon Jagoe",
+        install_requires=['click', 'pyyaml'],
+        entry_points="""
+              [console_scripts]
+              update-etags=update_etags.main:update_etags
+          """,
     )

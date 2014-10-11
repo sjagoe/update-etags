@@ -1,0 +1,7 @@
+tags-dir: /home/simon/tags
+temp-dir: /home/simon/tags/temp
+projects:
+  - name: update-etags
+    path: /home/simon/update-etags
+  - name: foo
+    path: /home/simon/bar
