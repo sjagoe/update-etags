@@ -1,6 +1,5 @@
 from __future__ import absolute_import, print_function
 
-from itertools import chain, repeat
 import fnmatch
 import os
 import subprocess
@@ -47,33 +46,25 @@ class UpdateEtags(object):
             replace(temp_tags, tags_dst)
 
     def _update_tags_for_project(self, project):
-        project_path = self._config.project_path(project)
-        project_file_types = self._config.project_file_types(project)
-        skip_dirs = self._config.skip_dirs
+        if project.path is not None:
+            filename_generator = _generate_files_to_tag(
+                project.path, project.file_types, project.skip_dirs)
+        else:
+            filename_generator = None
 
-        filename_generator = _generate_files_to_tag(
-            project_path, project_file_types, skip_dirs)
+        tags_dst = project.tags_path
 
-        tags_dst = self._config.project_tags_path(project)
         temp_tags = self._config.temp(tags_dst)
-        etags_cmd = [self._config.etags, '-o', temp_tags, '-']
+        etags_args = project.etags_args
+        etags_cmd = [project.etags, '-o', temp_tags] + list(etags_args)
+
+        if not os.path.exists(project.tags_dir):
+            os.makedirs(project.tags_dir)
+        if not os.path.exists(project.temp_dir):
+            os.makedirs(project.temp_dir)
 
         self._run_etags(etags_cmd, tags_dst, temp_tags, filename_generator)
-
-    def _generate_master_tags_file(self):
-        master_tags_file = self._config.tags_file
-        tags_temp = self._config.temp(master_tags_file)
-        project_tags_files = [self._config.project_tags_path(project)
-                              for project in self._config.projects]
-
-        args = list(chain.from_iterable(
-            zip(repeat('--include'), project_tags_files)))
-
-        etags_cmd = [self._config.etags, '-o', tags_temp] + args
-
-        self._run_etags(etags_cmd, master_tags_file, tags_temp)
 
     def update_all_tags(self):
         for project in self._config.projects:
             self._update_tags_for_project(project)
-        self._generate_master_tags_file()
