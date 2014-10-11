@@ -1,7 +1,7 @@
-tags-dir: /home/simon/tags
-temp-dir: /home/simon/tags/temp
+# tags-dir: ~/.etags
+# temp-dir: ~/.etags/temp
+# etags-command: etags
 projects:
   - name: update-etags
-    path: /home/simon/update-etags
-  - name: foo
-    path: /home/simon/bar
+    path: C:\\Users\\simon\\workspace\\update-etags
+    file-types: "*.py"
