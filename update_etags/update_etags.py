@@ -30,12 +30,12 @@ class UpdateEtags(object):
         self._config = config
 
     def _run_etags(self, etags_cmd, tags_dst, temp_tags,
-                   filename_generator=None):
+                   filename_generator=None, shell=False):
         stdout = open(temp_tags, 'wb')
         try:
             logger.debug('Running command {!r}'.format(etags_cmd))
             etags = subprocess.Popen(
-                etags_cmd, stdout=stdout, stdin=subprocess.PIPE)
+                etags_cmd, stdout=stdout, stdin=subprocess.PIPE, shell=shell)
             if filename_generator is not None:
                 for filename in filename_generator:
                     fname = u'{}\n'.format(filename).encode('utf-8')
@@ -74,7 +74,7 @@ class UpdateEtags(object):
             os.makedirs(project.temp_dir)
 
         self._run_etags(project.etags_command(), tags_dst, temp_tags,
-                        filename_generator)
+                        filename_generator, shell=project.shell)
 
     def update_all_tags(self):
         for project in self._config.projects:

@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function
 from itertools import chain, repeat
 import logging
 import os
+import sys
 
 import yaml
 
@@ -96,6 +97,10 @@ class Project(object):
     def tags_path(self):
         return os.path.join(self.tags_dir, self._name)
 
+    @property
+    def shell(self):
+        return False
+
     def etags_command(self):
         return [self.etags, '-o', '-'] + list(self.etags_args)
 
@@ -133,9 +138,19 @@ class MasterProject(Project):
 
         return self
 
+    @property
+    def shell(self):
+        if sys.platform == 'win32' and self._flatten:
+            return True
+        return False
+
     def etags_command(self):
         if self._flatten:
-            return ['cat'] + self._flatten_files
+            if sys.platform == 'win32':
+                cat = 'type'
+            else:
+                cat = 'cat'
+            return [cat] + self._flatten_files
         else:
             return super(MasterProject, self).etags_command()
 
