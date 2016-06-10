@@ -31,23 +31,28 @@ class UpdateEtags(object):
 
     def _run_etags(self, etags_cmd, tags_dst, temp_tags,
                    filename_generator=None):
+        stdout = open(temp_tags, 'wb')
         try:
             logger.debug('Running command {!r}'.format(etags_cmd))
-            etags = subprocess.Popen(etags_cmd, stdin=subprocess.PIPE)
+            etags = subprocess.Popen(
+                etags_cmd, stdout=stdout, stdin=subprocess.PIPE)
             if filename_generator is not None:
                 for filename in filename_generator:
-                    etags.stdin.write(u'{}\n'.format(filename).encode('utf-8'))
+                    fname = u'{}\n'.format(filename).encode('utf-8')
+                    etags.stdin.write(fname)
             etags.stdin.close()
-            etags.wait()
+            etags.communicate()
         except Exception:
-            logger.exception('Error occurred running etags')
+            logger.exception('Error occurred running tag-generator')
             if etags.poll() is None:
                 etags.terminate()
                 etags.communicate()
             if os.path.exists(temp_tags):
                 os.unlink(temp_tags)
+            stdout.close()
             raise
         else:
+            stdout.close()
             replace(temp_tags, tags_dst)
 
     def _update_tags_for_project(self, project):
@@ -60,8 +65,6 @@ class UpdateEtags(object):
         tags_dst = project.tags_path
 
         temp_tags = self._config.temp(tags_dst)
-        etags_args = project.etags_args
-        etags_cmd = [project.etags, '-o', temp_tags] + list(etags_args)
 
         if not os.path.exists(project.tags_dir):
             logger.debug('Creating tags dir {}'.format(project.tags_dir))
@@ -70,7 +73,8 @@ class UpdateEtags(object):
             logger.debug('Creating temp dir {}'.format(project.temp_dir))
             os.makedirs(project.temp_dir)
 
-        self._run_etags(etags_cmd, tags_dst, temp_tags, filename_generator)
+        self._run_etags(project.etags_command(), tags_dst, temp_tags,
+                        filename_generator)
 
     def update_all_tags(self):
         for project in self._config.projects:

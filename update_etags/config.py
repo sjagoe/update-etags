@@ -96,14 +96,25 @@ class Project(object):
     def tags_path(self):
         return os.path.join(self.tags_dir, self._name)
 
+    def etags_command(self):
+        return [self.etags, '-o', '-'] + list(self.etags_args)
+
 
 class MasterProject(Project):
+
+    def __init__(self, name, file_types, skip_dirs, tags_dir, temp_dir,
+                 etags, etags_args, path=None):
+        super(MasterProject, self).__init__(
+            name, file_types, skip_dirs, tags_dir, temp_dir,
+            etags, etags_args, path=path)
+        self._flatten = False
+        self._flatten_files = []
 
     @classmethod
     def from_dict(cls, config, data, projects):
         etags_args = data.get(config.ETAGS_ARGS, [])
 
-        project_tags_files = (project.tags_path for project in projects)
+        project_tags_files = [project.tags_path for project in projects]
 
         args = list(chain.from_iterable(
             zip(repeat('--include'), project_tags_files)))
@@ -111,8 +122,22 @@ class MasterProject(Project):
         etags_args = etags_args + args
         data[config.ETAGS_ARGS] = etags_args
 
-        return super(MasterProject, cls).from_dict(
+        self = super(MasterProject, cls).from_dict(
             config, data, read_stdin=False)
+
+        self._flatten = flatten = data.get('flatten', False)
+        if flatten:
+            self._flatten_files = project_tags_files
+        else:
+            self._flatten_files = []
+
+        return self
+
+    def etags_command(self):
+        if self._flatten:
+            return ['cat'] + self._flatten_files
+        else:
+            return super(MasterProject, self).etags_command()
 
 
 class UpdateEtagsConfig(object):
