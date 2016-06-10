@@ -1,14 +1,16 @@
 from __future__ import absolute_import, print_function
 
 from itertools import chain, repeat
+import logging
 import os
 
 import yaml
 
 from .errors import MissingConfiguration
 
-
 __all__ = ['UpdateEtagsConfig']
+
+logger = logging.getLogger(__name__)
 
 
 def normalize_path(path):
@@ -30,6 +32,7 @@ class Project(object):
 
     @classmethod
     def from_dict(cls, config, data, read_stdin=True):
+        name = data['name']
         etags = data.get(config.ETAGS, config.etags)
         etags_args = config.etags_args + tuple(data.get(config.ETAGS_ARGS, ()))
         tags_dir = normalize_path(data.get(config.TAGS_DIR, config.tags_dir))
@@ -41,10 +44,13 @@ class Project(object):
 
         kwargs = {}
         if 'path' in data:
-            kwargs['path'] = normalize_path(data['path'])
+            kwargs['path'] = path = normalize_path(data['path'])
+            if not os.path.exists(path):
+                logger.warning(
+                    'Project {} path {} does not exist'.format(name, path))
 
         return cls(
-            name=data['name'],
+            name=name,
             file_types=tuple(data.get(config.FILE_TYPES, ('*',))),
             skip_dirs=skip_dirs,
             tags_dir=tags_dir,
@@ -130,6 +136,7 @@ class UpdateEtagsConfig(object):
 
     @classmethod
     def from_file(cls, config_path):
+        logger.info('Loading configuration from {}'.format(config_path))
         if not os.path.exists(config_path):
             raise MissingConfiguration(config_path)
 

@@ -1,10 +1,13 @@
 from __future__ import absolute_import, print_function
 
 import fnmatch
+import logging
 import os
 import subprocess
 
 from ._compat import replace
+
+logger = logging.getLogger(__name__)
 
 
 def _any_match(name, patterns):
@@ -29,6 +32,7 @@ class UpdateEtags(object):
     def _run_etags(self, etags_cmd, tags_dst, temp_tags,
                    filename_generator=None):
         try:
+            logger.debug('Running command {!r}'.format(etags_cmd))
             etags = subprocess.Popen(etags_cmd, stdin=subprocess.PIPE)
             if filename_generator is not None:
                 for filename in filename_generator:
@@ -36,6 +40,7 @@ class UpdateEtags(object):
             etags.stdin.close()
             etags.wait()
         except Exception:
+            logger.exception('Error occurred running etags')
             if etags.poll() is None:
                 etags.terminate()
                 etags.communicate()
@@ -59,12 +64,15 @@ class UpdateEtags(object):
         etags_cmd = [project.etags, '-o', temp_tags] + list(etags_args)
 
         if not os.path.exists(project.tags_dir):
+            logger.debug('Creating tags dir {}'.format(project.tags_dir))
             os.makedirs(project.tags_dir)
         if not os.path.exists(project.temp_dir):
+            logger.debug('Creating temp dir {}'.format(project.temp_dir))
             os.makedirs(project.temp_dir)
 
         self._run_etags(etags_cmd, tags_dst, temp_tags, filename_generator)
 
     def update_all_tags(self):
         for project in self._config.projects:
+            logger.info('Updating project {}'.format(project.name))
             self._update_tags_for_project(project)
