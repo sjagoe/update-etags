@@ -32,7 +32,7 @@ class UpdateEtags(object):
             etags = subprocess.Popen(etags_cmd, stdin=subprocess.PIPE)
             if filename_generator is not None:
                 for filename in filename_generator:
-                    etags.stdin.write('{}\n'.format(filename))
+                    etags.stdin.write(u'{}\n'.format(filename).encode('utf-8'))
             etags.stdin.close()
             etags.wait()
         except Exception:
