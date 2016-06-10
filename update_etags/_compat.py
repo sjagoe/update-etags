@@ -6,7 +6,7 @@ import sys
 __all__ = ['replace']
 
 
-if sys.version >= (3, 3):
+if sys.version_info >= (3, 3):
     from os import replace
 else:
     def _create_old_filename(filename):
